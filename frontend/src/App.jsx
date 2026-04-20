@@ -18,6 +18,9 @@ import AdminApplicationDetail from './pages/AdminApplicationDetail';
 
 import AdminLayout from './components/AdminLayout';
 import { Outlet } from 'react-router-dom';
+import Settings from './pages/Settings';
+
+
 
 const ApplicantLayout = () => (
   <div className="min-h-screen bg-gray-50">
@@ -48,6 +51,8 @@ function App() {
             <Route path="/work-experience" element={<PrivateRoute><WorkExperience /></PrivateRoute>} />
             <Route path="/research-publications" element={<PrivateRoute><ResearchPublications /></PrivateRoute>} />
             <Route path="/score-card" element={<PrivateRoute><ScoreCard /></PrivateRoute>} />
+            <Route path="/admin/settings" element={<Settings />} />
+            <Route path="/applicant/settings" element={<Settings />} />
           </Route>
 
           {/* Admin Routes with ATS Layout */}

@@ -16,7 +16,7 @@ const AdminLayout = () => {
   const navItems = [
     { name: 'Dashboard', path: '/admin', end: true, icon: LayoutDashboard },
     { name: 'Candidates', path: '/admin/candidates', end: false, icon: Users },
-    { name: 'Settings', path: '#', end: false, icon: Settings },
+    { name: 'Settings', path: '/admin/settings', end: false, icon: Settings },
   ];
 
   return (
