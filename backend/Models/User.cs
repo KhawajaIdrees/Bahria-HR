@@ -19,6 +19,7 @@ namespace FacultyInduction.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         /// <summary>Applicant, Admin, etc.</summary>
         public string Role { get; set; } = "Applicant";
+        public string? ProfileImageBase64 { get; set; }
         public string? ResetPasswordToken { get; set; }
         public DateTime? ResetTokenExpiry { get; set; }
         

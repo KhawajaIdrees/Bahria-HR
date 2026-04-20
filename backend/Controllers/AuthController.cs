@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using System.Text;
 using FacultyInduction.Data;
 using FacultyInduction.Models;
@@ -98,7 +99,38 @@ namespace FacultyInduction.Controllers
             
             return Ok(new { message = "Password reset successfully" });
         }
-        
+
+        [HttpPut("change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+        {
+            // Extract the UserId from the current logged-in JWT token
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out int userId)) return Unauthorized();
+
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return NotFound("User not found");
+
+            // Verify old password
+            if (!BCrypt.Net.BCrypt.Verify(dto.OldPassword, user.PasswordHash))
+            {
+                return BadRequest("Incorrect current password.");
+            }
+
+            // Hash and save new password
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Password updated successfully" });
+        }
+
+        // Add this DTO at the bottom of the file (outside the controller class)
+        public class ChangePasswordDto
+        {
+            public string OldPassword { get; set; }
+            public string NewPassword { get; set; }
+        }
+                
         private string GenerateJwtToken(User user)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(

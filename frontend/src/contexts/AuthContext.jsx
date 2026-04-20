@@ -14,7 +14,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-const AuthContext = createContext();
+export const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
