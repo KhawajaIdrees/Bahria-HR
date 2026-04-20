@@ -26,12 +26,9 @@ namespace FacultyInduction.Controllers
         [HttpGet("applications")]
         public async Task<IActionResult> GetAllApplications()
         {
-            // Explicit join — avoids EF Core/SQLite issues with Include + Select and null navigations
-            var applications = await (
-                from a in _context.ApplicationRecords.AsNoTracking()
-                join u in _context.Users.AsNoTracking() on a.UserId equals u.Id
-                orderby a.TotalScore descending
-                select new
+            var applications = await _context.ApplicationRecords.AsNoTracking()
+                .OrderByDescending(a => (double)a.TotalScore)
+                .Select(a => new
                 {
                     a.Id,
                     a.AppliedPosition,
@@ -41,10 +38,10 @@ namespace FacultyInduction.Controllers
                     a.SubmittedAt,
                     User = new
                     {
-                        u.Id,
-                        u.FullName,
-                        u.Email,
-                        u.Phone
+                        a.User.Id,
+                        a.User.FullName,
+                        a.User.Email,
+                        a.User.Phone
                     }
                 }).ToListAsync();
 
@@ -145,12 +142,10 @@ namespace FacultyInduction.Controllers
         [HttpGet("shortlisted")]
         public async Task<IActionResult> GetShortlistedCandidates()
         {
-            var shortlisted = await (
-                from a in _context.ApplicationRecords.AsNoTracking()
-                join u in _context.Users.AsNoTracking() on a.UserId equals u.Id
-                where a.Status == "Shortlisted" || a.TotalScore >= 70
-                orderby a.TotalScore descending
-                select new
+            var shortlisted = await _context.ApplicationRecords.AsNoTracking()
+                .Where(a => a.Status == "Shortlisted" || a.TotalScore >= 70)
+                .OrderByDescending(a => (double)a.TotalScore)
+                .Select(a => new
                 {
                     a.Id,
                     a.AppliedPosition,
@@ -159,9 +154,9 @@ namespace FacultyInduction.Controllers
                     a.Status,
                     User = new
                     {
-                        u.FullName,
-                        u.Email,
-                        u.Phone
+                        a.User.FullName,
+                        a.User.Email,
+                        a.User.Phone
                     }
                 }).ToListAsync();
 

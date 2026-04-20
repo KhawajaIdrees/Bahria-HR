@@ -135,51 +135,84 @@ const AdminApplicationDetail = () => {
 
       {score && (
         <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">Score breakdown</h2>
-          <pre className="text-[10px] sm:text-xs bg-gray-50 p-3 sm:p-4 rounded-lg overflow-x-auto text-gray-800 max-w-full">
-            {JSON.stringify(score, null, 2)}
-          </pre>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Scoring breakdown</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-primary/5 rounded-lg p-4 border border-primary/10">
+              <h3 className="text-xs font-semibold text-primary mb-1 uppercase tracking-wide">Academic</h3>
+              <p className="text-3xl font-bold text-gray-900">{Number(score.academicQualificationScore).toFixed(1)}</p>
+            </div>
+            <div className="bg-green-50 rounded-lg p-4 border border-green-100">
+              <h3 className="text-xs font-semibold text-green-700 mb-1 uppercase tracking-wide">Experience</h3>
+              <p className="text-3xl font-bold text-gray-900">{Number(score.experienceScore).toFixed(1)}</p>
+            </div>
+            <div className="bg-amber-50 rounded-lg p-4 border border-amber-100">
+              <h3 className="text-xs font-semibold text-amber-700 mb-1 uppercase tracking-wide">Publications</h3>
+              <p className="text-3xl font-bold text-gray-900">{Number(score.publicationScore).toFixed(1)}</p>
+            </div>
+          </div>
         </div>
       )}
 
       <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Academic qualifications</h2>
-        <ul className="space-y-2 text-sm">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Academic qualifications</h2>
+        <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {(user?.academicQualifications || []).map((q) => (
-            <li key={q.id} className="border-b border-gray-100 pb-2">
-              <strong>{q.degree}</strong> — {q.institute} ({q.passingYear})
+            <li key={q.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <div className="font-semibold text-gray-900 text-base">{q.degree}</div>
+              <div className="text-sm text-gray-600 mt-1">{q.institute}</div>
+              <div className="flex justify-between items-center mt-3 text-sm">
+                <span className="text-gray-500">Graduated: {q.passingYear}</span>
+                <span className="font-medium bg-gray-200 px-2 py-0.5 rounded text-gray-800 flex items-center">
+                  {q.gpa ? `GPA: ${q.gpa}` : `Marks: ${q.marks}`}
+                </span>
+              </div>
             </li>
           ))}
           {(!user?.academicQualifications || user.academicQualifications.length === 0) && (
-            <li className="text-gray-500">None</li>
+            <li className="text-gray-500 w-full col-span-2 text-center py-4">No academic qualifications listed.</li>
           )}
         </ul>
       </div>
 
       <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Work experience</h2>
-        <ul className="space-y-2 text-sm">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Work experience</h2>
+        <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {(user?.workExperiences || []).map((w) => (
-            <li key={w.id} className="border-b border-gray-100 pb-2">
-              <strong>{w.positionTitle}</strong> at {w.organizationName}
+            <li key={w.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <div className="font-semibold text-gray-900 text-base">{w.positionTitle}</div>
+              <div className="text-sm text-gray-600 mt-1">{w.organizationName}</div>
+              <div className="text-sm text-gray-500 mt-2">
+                {w.startDate ? new Date(w.startDate).toLocaleDateString() : '—'} 
+                {' '}to{' '}
+                {w.isCurrentJob ? 'Present' : (w.endDate ? new Date(w.endDate).toLocaleDateString() : '—')}
+              </div>
             </li>
           ))}
           {(!user?.workExperiences || user.workExperiences.length === 0) && (
-            <li className="text-gray-500">None</li>
+            <li className="text-gray-500 w-full col-span-2 text-center py-4">No work experience listed.</li>
           )}
         </ul>
       </div>
 
       <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 border border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Research publications</h2>
-        <ul className="space-y-2 text-sm">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Research publications</h2>
+        <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {(user?.researchPublications || []).map((p) => (
-            <li key={p.id} className="border-b border-gray-100 pb-2">
-              {p.title} — {p.publicationYear}
+            <li key={p.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <div className="font-semibold text-gray-900 text-sm line-clamp-2" title={p.title}>{p.title}</div>
+              <div className="text-xs text-gray-600 mt-2">
+                <strong>Journal:</strong> {p.journalName || '—'}
+              </div>
+              <div className="flex justify-between items-center mt-3 text-xs">
+                <span className="text-gray-500">Year: {p.publicationYear}</span>
+                <span className="font-medium bg-gray-200 px-2 py-0.5 rounded text-gray-800">
+                  Cat: {p.category || 'N/A'}
+                </span>
+              </div>
             </li>
           ))}
           {(!user?.researchPublications || user.researchPublications.length === 0) && (
-            <li className="text-gray-500">None</li>
+            <li className="text-gray-500 w-full col-span-2 text-center py-4">No research publications listed.</li>
           )}
         </ul>
       </div>
