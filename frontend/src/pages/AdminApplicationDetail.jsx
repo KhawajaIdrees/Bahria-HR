@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import axios from 'axios';
+import { X, Mail, Phone, MapPin, Calendar, GraduationCap, Briefcase, BookOpen, Send, MoreVertical, Edit3 } from 'lucide-react';
 
 const STATUS_OPTIONS = ['Pending', 'Shortlisted', 'Rejected', 'Hired'];
 
@@ -12,6 +13,8 @@ const AdminApplicationDetail = () => {
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
   const [saving, setSaving] = useState(false);
+  
+  const { onCandidateUpdated } = useOutletContext() || {};
 
   useEffect(() => {
     const load = async () => {
@@ -22,21 +25,23 @@ const AdminApplicationDetail = () => {
         setData(res.data);
         setStatus(res.data.application?.status || '');
       } catch (e) {
-        setError(e.response?.status === 404 ? 'Application not found.' : 'Failed to load.');
+        setError(e.response?.status === 404 ? 'Application not found.' : 'Failed to load details.');
       }
       setLoading(false);
     };
     load();
   }, [id]);
 
-  const handleStatusSave = async () => {
+  const handleStatusSave = async (newStatus) => {
     setSaving(true);
+    setStatus(newStatus);
     try {
-      await axios.put(`/api/admin/applications/${id}/status`, { status });
+      await axios.put(`/api/admin/applications/${id}/status`, { status: newStatus });
       const res = await axios.get(`/api/admin/applications/${id}`);
       setData(res.data);
-      setStatus(res.data.application?.status || status);
-      alert('Status updated.');
+      if (onCandidateUpdated) {
+        onCandidateUpdated(id, newStatus);
+      }
     } catch (e) {
       alert(e.response?.data?.message || 'Could not update status.');
     }
@@ -44,16 +49,23 @@ const AdminApplicationDetail = () => {
   };
 
   if (loading) {
-    return <div className="text-center py-12 text-gray-600">Loading…</div>;
+    return (
+      <div className="h-full w-full flex items-center justify-center bg-white">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="h-10 w-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4"></div>
+          <p className="text-slate-500 font-medium font-sans">Loading Profile...</p>
+        </div>
+      </div>
+    );
   }
 
   if (error || !data?.application) {
     return (
-      <div className="max-w-3xl mx-auto text-center py-12">
-        <p className="text-red-600 mb-4">{error || 'Not found.'}</p>
-        <Link to="/admin" className="text-primary hover:underline">
-          Back to admin dashboard
-        </Link>
+      <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+        <p className="text-rose-600 font-medium mb-4">{error || 'Record unresolvable.'}</p>
+        <button onClick={() => navigate('/admin')} className="text-primary hover:underline font-bold">
+          Close Pane
+        </button>
       </div>
     );
   }
@@ -63,158 +75,197 @@ const AdminApplicationDetail = () => {
   const score = data.detailedScore;
 
   return (
-    <div className="max-w-5xl mx-auto px-1 sm:px-0">
-      <button
-        type="button"
-        onClick={() => navigate('/admin')}
-        className="text-sm text-primary hover:underline mb-4 sm:mb-6"
-      >
-        ← Back to all submissions
-      </button>
-
-      <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-100">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 break-words">Application #{app.id}</h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <div>
-            <span className="text-gray-500">Applicant</span>
-            <p className="font-medium text-gray-900">{user?.fullName}</p>
+    <div className="h-full flex flex-col bg-white overflow-hidden font-sans border-l border-slate-200">
+      {/* Sticky Header */}
+      <div className="shrink-0 px-6 py-4 border-b border-slate-200 bg-white sticky top-0 z-20 flex justify-between items-start pt-6">
+        <div className="flex gap-4">
+          <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-2xl font-black text-slate-700 border border-slate-300 shadow-sm shrink-0">
+            {(user?.fullName || 'A')[0].toUpperCase()}
           </div>
           <div>
-            <span className="text-gray-500">Email</span>
-            <p className="font-medium text-gray-900">{user?.email}</p>
-          </div>
-          <div>
-            <span className="text-gray-500">Phone</span>
-            <p className="font-medium text-gray-900">{user?.phone || '—'}</p>
-          </div>
-          <div>
-            <span className="text-gray-500">Submitted</span>
-            <p className="font-medium text-gray-900">
-              {app.submittedAt ? new Date(app.submittedAt).toLocaleString() : '—'}
+            <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight leading-tight mb-1">{user?.fullName}</h2>
+            <p className="text-slate-500 font-medium flex items-center gap-2 text-sm">
+              <Briefcase size={14}/> {app.appliedPosition} <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 uppercase tracking-widest text-slate-600">{app.hiringType}</span>
             </p>
           </div>
-          <div>
-            <span className="text-gray-500">Position</span>
-            <p className="font-medium text-gray-900">{app.appliedPosition}</p>
-          </div>
-          <div>
-            <span className="text-gray-500">Hiring type</span>
-            <p className="font-medium text-gray-900">{app.hiringType}</p>
-          </div>
-          <div>
-            <span className="text-gray-500">Total score</span>
-            <p className="font-medium text-gray-900">{Number(app.totalScore).toFixed(1)} / 100</p>
-          </div>
         </div>
 
-        <div className="mt-6 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-end gap-3 border-t pt-6">
-          <div className="w-full sm:w-auto">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Application status</label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full sm:w-auto min-h-[44px] border border-gray-300 rounded-lg px-3 py-2 text-sm"
-            >
-              {STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </div>
-          <button
-            type="button"
-            onClick={handleStatusSave}
-            disabled={saving || status === app.status}
-            className="bg-primary text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 min-h-[44px] w-full sm:w-auto"
-          >
-            {saving ? 'Saving…' : 'Save status'}
-          </button>
+        <div className="flex items-center gap-2">
+           <div className="relative group">
+              {/* Fake dropdown for status change */}
+              <button 
+                className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-bold text-sm transition-colors"
+                disabled={saving}
+              >
+                 <Edit3 size={16} /> 
+                 {saving ? 'Updating...' : status}
+              </button>
+              <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-30 overflow-hidden">
+                 {STATUS_OPTIONS.map(opt => (
+                   <button 
+                     key={opt}
+                     className="block w-full text-left px-4 py-2 text-sm hover:bg-slate-50 font-medium text-slate-700"
+                     onClick={() => handleStatusSave(opt)}
+                   >
+                     Mark as {opt}
+                   </button>
+                 ))}
+              </div>
+           </div>
+           
+           <button className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors shadow-sm">
+              <Send size={16} /> <span className="hidden xl:inline">Message</span>
+           </button>
+           
+           <button onClick={() => navigate('/admin')} className="p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-full transition-colors ml-2">
+              <X size={20} />
+           </button>
         </div>
       </div>
 
-      {score && (
-        <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Scoring breakdown</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-primary/5 rounded-lg p-4 border border-primary/10">
-              <h3 className="text-xs font-semibold text-primary mb-1 uppercase tracking-wide">Academic</h3>
-              <p className="text-3xl font-bold text-gray-900">{Number(score.academicQualificationScore).toFixed(1)}</p>
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-slate-50/50">
+        
+        {/* Contact Info Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className="flex items-center gap-3 p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
+            <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+               <Mail size={18} />
             </div>
-            <div className="bg-green-50 rounded-lg p-4 border border-green-100">
-              <h3 className="text-xs font-semibold text-green-700 mb-1 uppercase tracking-wide">Experience</h3>
-              <p className="text-3xl font-bold text-gray-900">{Number(score.experienceScore).toFixed(1)}</p>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Email Address</p>
+              <p className="text-sm font-semibold text-slate-900 truncate">{user?.email}</p>
             </div>
-            <div className="bg-amber-50 rounded-lg p-4 border border-amber-100">
-              <h3 className="text-xs font-semibold text-amber-700 mb-1 uppercase tracking-wide">Publications</h3>
-              <p className="text-3xl font-bold text-gray-900">{Number(score.publicationScore).toFixed(1)}</p>
+          </div>
+          <div className="flex items-center gap-3 p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
+            <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+               <Phone size={18} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Phone</p>
+              <p className="text-sm font-semibold text-slate-900 truncate">{user?.phone || 'Not provided'}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 p-4 bg-white border border-slate-200 rounded-xl shadow-sm">
+            <div className="w-10 h-10 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+               <Calendar size={18} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Applied on</p>
+              <p className="text-sm font-semibold text-slate-900 truncate">{app.submittedAt ? new Date(app.submittedAt).toLocaleDateString() : 'N/A'}</p>
             </div>
           </div>
         </div>
-      )}
 
-      <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Academic qualifications</h2>
-        <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {(user?.academicQualifications || []).map((q) => (
-            <li key={q.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <div className="font-semibold text-gray-900 text-base">{q.degree}</div>
-              <div className="text-sm text-gray-600 mt-1">{q.institute}</div>
-              <div className="flex justify-between items-center mt-3 text-sm">
-                <span className="text-gray-500">Graduated: {q.passingYear}</span>
-                <span className="font-medium bg-gray-200 px-2 py-0.5 rounded text-gray-800 flex items-center">
-                  {q.gpa ? `GPA: ${q.gpa}` : `Marks: ${q.marks}`}
-                </span>
+        {/* Score Breakdown */}
+        {score && (
+          <section>
+            <div className="flex items-center justify-between mb-4">
+               <h3 className="text-lg font-bold text-slate-900">Score Evaluation</h3>
+               <span className="bg-slate-900 text-white px-3 py-1 rounded-full text-sm font-black shadow-sm">{Number(app.totalScore).toFixed(1)} / 100 PTS</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-4 opacity-5 text-indigo-600 group-hover:scale-110 transition-transform"><GraduationCap size={64}/></div>
+                <h4 className="text-xs font-extrabold text-indigo-600 uppercase tracking-widest mb-1 relative">Academics</h4>
+                <p className="text-4xl font-black text-slate-900 relative">{Number(score.academicQualificationScore).toFixed(1)}</p>
               </div>
-            </li>
-          ))}
-          {(!user?.academicQualifications || user.academicQualifications.length === 0) && (
-            <li className="text-gray-500 w-full col-span-2 text-center py-4">No academic qualifications listed.</li>
-          )}
-        </ul>
-      </div>
+              <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-4 opacity-5 text-emerald-600 group-hover:scale-110 transition-transform"><Briefcase size={64}/></div>
+                <h4 className="text-xs font-extrabold text-emerald-600 uppercase tracking-widest mb-1 relative">Experience</h4>
+                <p className="text-4xl font-black text-slate-900 relative">{Number(score.experienceScore).toFixed(1)}</p>
+              </div>
+              <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-4 opacity-5 text-rose-600 group-hover:scale-110 transition-transform"><BookOpen size={64}/></div>
+                <h4 className="text-xs font-extrabold text-rose-600 uppercase tracking-widest mb-1 relative">Publications</h4>
+                <p className="text-4xl font-black text-slate-900 relative">{Number(score.publicationScore).toFixed(1)}</p>
+              </div>
+            </div>
+          </section>
+        )}
 
-      <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 mb-4 sm:mb-6 border border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Work experience</h2>
-        <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {(user?.workExperiences || []).map((w) => (
-            <li key={w.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <div className="font-semibold text-gray-900 text-base">{w.positionTitle}</div>
-              <div className="text-sm text-gray-600 mt-1">{w.organizationName}</div>
-              <div className="text-sm text-gray-500 mt-2">
-                {w.startDate ? new Date(w.startDate).toLocaleDateString() : '—'} 
-                {' '}to{' '}
-                {w.isCurrentJob ? 'Present' : (w.endDate ? new Date(w.endDate).toLocaleDateString() : '—')}
-              </div>
-            </li>
-          ))}
-          {(!user?.workExperiences || user.workExperiences.length === 0) && (
-            <li className="text-gray-500 w-full col-span-2 text-center py-4">No work experience listed.</li>
-          )}
-        </ul>
-      </div>
+        {/* Academic Profile */}
+        <section>
+          <div className="flex items-center gap-2 mb-4 text-slate-900">
+             <GraduationCap size={20} className="text-slate-400" />
+             <h3 className="text-lg font-bold">Education History</h3>
+          </div>
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+             {(!user?.academicQualifications || user.academicQualifications.length === 0) ? (
+                <div className="p-8 text-center text-slate-500 font-medium">No education listed.</div>
+             ) : (
+                <div className="divide-y divide-slate-100">
+                   {user.academicQualifications.map(q => (
+                      <div key={q.id} className="p-5 hover:bg-slate-50 transition-colors">
+                         <div className="flex justify-between items-start mb-1">
+                            <h4 className="font-bold text-slate-900 text-base">{q.degree}</h4>
+                            <span className="bg-slate-100 text-slate-600 px-2.5 py-1 rounded text-xs font-bold font-mono">
+                               {q.gpa ? `GPA: ${q.gpa}` : `Marks: ${q.marks}`}
+                            </span>
+                         </div>
+                         <p className="text-slate-600 font-medium text-sm">{q.institute}</p>
+                         <p className="text-slate-400 text-xs mt-2 font-semibold">Graduated {q.passingYear}</p>
+                      </div>
+                   ))}
+                </div>
+             )}
+          </div>
+        </section>
 
-      <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 border border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Research publications</h2>
-        <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {(user?.researchPublications || []).map((p) => (
-            <li key={p.id} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <div className="font-semibold text-gray-900 text-sm line-clamp-2" title={p.title}>{p.title}</div>
-              <div className="text-xs text-gray-600 mt-2">
-                <strong>Journal:</strong> {p.journalName || '—'}
-              </div>
-              <div className="flex justify-between items-center mt-3 text-xs">
-                <span className="text-gray-500">Year: {p.publicationYear}</span>
-                <span className="font-medium bg-gray-200 px-2 py-0.5 rounded text-gray-800">
-                  Cat: {p.category || 'N/A'}
-                </span>
-              </div>
-            </li>
-          ))}
-          {(!user?.researchPublications || user.researchPublications.length === 0) && (
-            <li className="text-gray-500 w-full col-span-2 text-center py-4">No research publications listed.</li>
-          )}
-        </ul>
+        {/* Work Profile */}
+        <section>
+          <div className="flex items-center gap-2 mb-4 text-slate-900">
+             <Briefcase size={20} className="text-slate-400" />
+             <h3 className="text-lg font-bold">Experience Details</h3>
+          </div>
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+             {(!user?.workExperiences || user.workExperiences.length === 0) ? (
+                <div className="p-8 text-center text-slate-500 font-medium">No work experience listed.</div>
+             ) : (
+                <div className="divide-y divide-slate-100">
+                   {user.workExperiences.map(w => (
+                      <div key={w.id} className="p-5 hover:bg-slate-50 transition-colors">
+                         <div className="flex justify-between items-start mb-1">
+                            <h4 className="font-bold text-slate-900 text-base">{w.positionTitle}</h4>
+                            <span className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest">
+                               {w.isCurrentJob ? 'Current' : 'Past'}
+                            </span>
+                         </div>
+                         <p className="text-slate-600 font-medium text-sm flex items-center gap-1.5"><MapPin size={14} className="text-slate-400"/> {w.organizationName}</p>
+                         <p className="text-slate-400 text-xs mt-2 font-semibold">
+                            {w.startDate ? new Date(w.startDate).toLocaleDateString() : '—'} &rarr; {w.isCurrentJob ? 'Present' : (w.endDate ? new Date(w.endDate).toLocaleDateString() : '—')}
+                         </p>
+                      </div>
+                   ))}
+                </div>
+             )}
+          </div>
+        </section>
+
+        {/* Publications */}
+        <section className="pb-8">
+          <div className="flex items-center gap-2 mb-4 text-slate-900">
+             <BookOpen size={20} className="text-slate-400" />
+             <h3 className="text-lg font-bold">Research Papers</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             {(!user?.researchPublications || user.researchPublications.length === 0) ? (
+                <div className="col-span-2 bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-500 font-medium shadow-sm">No research published.</div>
+             ) : (
+                user.researchPublications.map(p => (
+                   <div key={p.id} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow transition-shadow">
+                      <h4 className="font-bold text-slate-900 text-sm leading-snug mb-2">{p.title}</h4>
+                      <p className="text-slate-500 text-xs mb-3 truncate" title={p.journalName}>Published in: <span className="font-semibold text-slate-700">{p.journalName || 'Unknown'}</span></p>
+                      <div className="flex justify-between items-center text-xs">
+                         <span className="text-slate-400 font-bold">{p.publicationYear}</span>
+                         <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold">Type: {p.category || 'N/A'}</span>
+                      </div>
+                   </div>
+                ))
+             )}
+          </div>
+        </section>
+
       </div>
     </div>
   );
