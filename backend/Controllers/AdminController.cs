@@ -15,12 +15,14 @@ namespace FacultyInduction.Controllers
     public class AdminController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly IEmailService _emailService;
         private readonly IScoringService _scoringService;
 
-        public AdminController(ApplicationDbContext context, IScoringService scoringService)
+        public AdminController(ApplicationDbContext context, IScoringService scoringService, IEmailService emailService)
         {
             _context = context;
             _scoringService = scoringService;
+            _emailService = emailService;
         }
 
         [HttpGet("applications")]
@@ -71,17 +73,34 @@ namespace FacultyInduction.Controllers
             return Ok(new { Application = application, DetailedScore = score });
         }
 
-        [HttpPut("applications/{id}/status")]
-        public async Task<IActionResult> UpdateApplicationStatus(int id, [FromBody] UpdateApplicationStatusDto body)
+        // New endpoint to send a message to the applicant
+        [HttpPost("applications/{id}/message")]
+        public async Task<IActionResult> SendMessageToApplicant(int id, [FromBody] MessageDto dto)
         {
-            var application = await _context.ApplicationRecords.FindAsync(id);
-            if (application == null)
-                return NotFound();
+            // Retrieve the application record with user details
+            var application = await _context.ApplicationRecords
+                .Include(a => a.User)
+                .FirstOrDefaultAsync(a => a.Id == id);
 
-            application.Status = body.Status;
-            await _context.SaveChangesAsync();
+            if (application == null || application.User == null)
+                return NotFound(new { message = "Application or user not found." });
 
-            return Ok(new { message = $"Application status updated to {body.Status}" });
+            if (string.IsNullOrWhiteSpace(dto.Message))
+                return BadRequest(new { message = "Message cannot be empty." });
+
+            try
+            {
+                // Send email using the injected email service
+                var subject = $"Message regarding your application for {application.AppliedPosition}";
+                var body = $"<p>Dear {application.User.FullName},</p><p>{dto.Message}</p><p>Best regards,<br/>Faculty Induction Team</p>";
+                await _emailService.SendAsync(application.User.Email, subject, body);
+
+                return Ok(new { message = "Message sent successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Failed to send message: {ex.Message}" });
+            }
         }
 
         /// <summary>Counts for admin dashboard cards.</summary>

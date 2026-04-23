@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams, Outlet } from 'react-router-dom';
 import axios from 'axios';
-import { Search } from 'lucide-react';
+import { Search, ArrowLeft } from 'lucide-react';
 
 const TABS = [
   { id: 'pending', label: 'Pending Review' },
@@ -86,7 +86,16 @@ const AdminCandidatesView = () => {
       {/* Left Pipeline Pane */}
       <div className="flex flex-col w-[350px] xl:w-[420px] bg-white border-r border-slate-200 shadow-lg z-10 shrink-0 h-full p-4 overflow-hidden relative">
         <div className="mb-4">
-           <h2 className="text-xl font-bold text-slate-800 mb-4">Candidate Pipeline</h2>
+           <div className="flex items-center gap-2 mb-4">
+              <button 
+                onClick={() => navigate('/admin')} 
+                className="p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-700 rounded-lg transition-colors"
+                title="Back to dashboard"
+              >
+                <ArrowLeft size={18} />
+              </button>
+              <h2 className="text-xl font-bold text-slate-800">Candidate Pipeline</h2>
+           </div>
            <div className="relative w-full mb-4">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
               <input

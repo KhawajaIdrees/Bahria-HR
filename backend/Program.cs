@@ -43,6 +43,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 // Services
 builder.Services.AddScoped<IScoringService, ScoringService>();
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 
 // CORS — allow any localhost / 127.0.0.1 port so Vite can use 5173, 5174, etc.
 builder.Services.AddCors(options =>

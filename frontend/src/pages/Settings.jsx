@@ -1,8 +1,10 @@
 import React, { useState, useContext, useRef } from 'react';
 import { AuthContext } from '../contexts/AuthContext'; // Adjust path if needed
+import { useNavigate } from 'react-router-dom';
 
 export default function Settings() {
     const { user, token } = useContext(AuthContext); // Assuming AuthContext provides user & token
+    const navigate = useNavigate();
     
     // Profile State
     const [fullName, setFullName] = useState(user?.fullName || '');
@@ -98,6 +100,12 @@ export default function Settings() {
 
     return (
         <div className="max-w-4xl mx-auto p-6 space-y-8">
+            <button 
+                onClick={() => navigate(-1)} 
+                className="flex items-center text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+            >
+                &larr; Back
+            </button>
             <h1 className="text-2xl font-bold text-gray-800">Account Settings</h1>
 
             {/* Profile Section */}

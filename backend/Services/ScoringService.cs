@@ -1,4 +1,5 @@
 using FacultyInduction.Models;
+using FacultyInduction.Data;
 
 namespace FacultyInduction.Services
 {
@@ -9,6 +10,13 @@ namespace FacultyInduction.Services
     
     public class ScoringService : IScoringService
     {
+        private readonly ApplicationDbContext _context;
+
+        public ScoringService(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
         public CandidateScore CalculateScore(int userId, string hiringType, string appliedPosition)
         {
             var score = new CandidateScore
@@ -27,16 +35,33 @@ namespace FacultyInduction.Services
             else
                 CalculatePOPExperienceScore(score, appliedPosition);
             
-            // 3. Publication Score
-            if (hiringType == "Permanent")
-                CalculatePermanentPublicationScore(score);
-            else
-                CalculatePOPPublicationScore(score);
+            // 3. Publication Score - Query from database
+            CalculatePublicationScoreFromDatabase(score, userId);
             
             // Total
             score.TotalScore = score.AcademicQualificationScore + score.ExperienceScore + score.PublicationScore;
             
             return score;
+        }
+
+        private void CalculatePublicationScoreFromDatabase(CandidateScore score, int userId)
+        {
+            // Get all publications for this user from database
+            var publications = _context.ResearchPublications
+                .Where(p => p.UserId == userId)
+                .ToList();
+
+            // Count papers by category
+            score.WCategoryPapers = publications.Count(p => p.Category == "W" && !p.IsImpactFactor);
+            score.XCategoryPapers = publications.Count(p => p.Category == "X" && !p.IsImpactFactor);
+            score.YCategoryPapers = publications.Count(p => p.Category == "Y" && !p.IsImpactFactor);
+            score.ImpactFactorPapers = publications.Count(p => p.IsImpactFactor);
+
+            // Calculate publication score based on hiring type
+            if (score.HiringType == "Permanent")
+                CalculatePermanentPublicationScore(score);
+            else
+                CalculatePOPPublicationScore(score);
         }
         
         private void CalculateAcademicScore(CandidateScore score)

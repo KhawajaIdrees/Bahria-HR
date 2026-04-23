@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import FormStepNav from '../components/FormStepNav';
+import { ArrowLeft } from 'lucide-react';
 
 const ResearchPublications = () => {
   const [publications, setPublications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
     title: '',
@@ -86,6 +88,12 @@ const ResearchPublications = () => {
   return (
     <div className="max-w-5xl mx-auto">
       <div className="mb-6 sm:mb-8">
+        <button 
+          onClick={() => navigate('/')} 
+          className="flex items-center gap-2 text-primary hover:text-primary/80 font-semibold text-sm mb-3 transition-colors"
+        >
+          <ArrowLeft size={16} /> Back to Dashboard
+        </button>
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Research Publications</h1>
         <p className="mt-2 text-sm sm:text-base text-gray-600">
           Add your publications, then review your score and submit your final application.

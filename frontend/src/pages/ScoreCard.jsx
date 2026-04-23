@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import FormStepNav from '../components/FormStepNav';
+import { ArrowLeft } from 'lucide-react';
 
 const ScoreCard = () => {
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [score, setScore] = useState(null);
   const [loading, setLoading] = useState(true);
   const [statusLoading, setStatusLoading] = useState(true);
@@ -96,6 +98,12 @@ const ScoreCard = () => {
           { to: '/score-card', label: 'Score & Submit', shortLabel: 'Score Card' },
         ]}
       />
+      <button 
+        onClick={() => navigate('/')} 
+        className="flex items-center gap-2 text-primary hover:text-primary/80 font-semibold text-sm mb-3 transition-colors"
+      >
+        <ArrowLeft size={16} /> Back to Dashboard
+      </button>
       <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-4">Score Card</h1>
       <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">
         Hello <span className="font-medium text-gray-800">{user?.fullName || 'applicant'}</span> — review your
