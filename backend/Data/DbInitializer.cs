@@ -1,4 +1,5 @@
-using System.Data;
+using System;
+using System.Linq;
 using FacultyInduction.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,9 +9,10 @@ namespace FacultyInduction.Data
     {
         public static void Initialize(ApplicationDbContext context)
         {
+            // Ensure database is created
             context.Database.EnsureCreated();
 
-            // Upgrade older SQLite DBs that predate the Role column (avoid failed ALTER noise in logs)
+            // Ensure Role column exists (SQL Server version)
             EnsureRoleColumn(context);
 
             // Create admin user if not exists
@@ -40,23 +42,24 @@ namespace FacultyInduction.Data
 
         private static void EnsureRoleColumn(ApplicationDbContext context)
         {
-            var conn = context.Database.GetDbConnection();
-            var wasOpen = conn.State == ConnectionState.Open;
-            if (!wasOpen) conn.Open();
             try
             {
-                using var check = conn.CreateCommand();
-                check.CommandText = "SELECT COUNT(*) FROM pragma_table_info('Users') WHERE name = 'Role'";
-                var hasRole = Convert.ToInt64(check.ExecuteScalar() ?? 0L) > 0;
-                if (hasRole) return;
+                // SQL Server compatible way to check and add column
+                var sql = @"
+                    IF NOT EXISTS (
+                        SELECT * FROM INFORMATION_SCHEMA.COLUMNS 
+                        WHERE TABLE_NAME = 'Users' AND COLUMN_NAME = 'Role'
+                    )
+                    BEGIN
+                        ALTER TABLE Users ADD [Role] NVARCHAR(50) NOT NULL DEFAULT 'Applicant'
+                    END";
 
-                using var alter = conn.CreateCommand();
-                alter.CommandText = "ALTER TABLE Users ADD COLUMN Role TEXT NOT NULL DEFAULT 'Applicant'";
-                alter.ExecuteNonQuery();
+                context.Database.ExecuteSqlRaw(sql);
             }
-            finally
+            catch (Exception ex)
             {
-                if (!wasOpen && conn.State == ConnectionState.Open) conn.Close();
+                // Table might not exist yet - that's fine
+                Console.WriteLine($"Note: {ex.Message}");
             }
         }
     }

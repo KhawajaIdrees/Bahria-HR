@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace FacultyInduction.Migrations
 {
     /// <inheritdoc />
-    public partial class AddVerificationCodeFields : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,20 +15,19 @@ namespace FacultyInduction.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Email = table.Column<string>(type: "TEXT", nullable: false),
-                    PasswordHash = table.Column<string>(type: "TEXT", nullable: false),
-                    FullName = table.Column<string>(type: "TEXT", nullable: false),
-                    CNIC = table.Column<string>(type: "TEXT", nullable: true),
-                    DateOfBirth = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    Phone = table.Column<string>(type: "TEXT", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Role = table.Column<string>(type: "TEXT", nullable: false),
-                    ResetPasswordToken = table.Column<string>(type: "TEXT", nullable: true),
-                    ResetTokenExpiry = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    VerificationCode = table.Column<string>(type: "TEXT", nullable: true),
-                    VerificationCodeExpiry = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CNIC = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Phone = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ProfileImageBase64 = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ResetPasswordToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ResetTokenExpiry = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -39,15 +38,15 @@ namespace FacultyInduction.Migrations
                 name: "AcademicQualifications",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Degree = table.Column<string>(type: "TEXT", nullable: false),
-                    Institute = table.Column<string>(type: "TEXT", nullable: true),
-                    Marks = table.Column<string>(type: "TEXT", nullable: true),
-                    GPA = table.Column<decimal>(type: "TEXT", nullable: true),
-                    PassingYear = table.Column<int>(type: "INTEGER", nullable: true),
-                    IsCompleted = table.Column<bool>(type: "INTEGER", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Degree = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Institute = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Marks = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    GPA = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    PassingYear = table.Column<int>(type: "int", nullable: true),
+                    IsCompleted = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -64,14 +63,14 @@ namespace FacultyInduction.Migrations
                 name: "ApplicationRecords",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
-                    HiringType = table.Column<string>(type: "TEXT", nullable: false),
-                    AppliedPosition = table.Column<string>(type: "TEXT", nullable: false),
-                    TotalScore = table.Column<decimal>(type: "TEXT", nullable: false),
-                    SubmittedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Status = table.Column<string>(type: "TEXT", nullable: false)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    HiringType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    AppliedPosition = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TotalScore = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    SubmittedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -88,18 +87,18 @@ namespace FacultyInduction.Migrations
                 name: "ResearchPublications",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Title = table.Column<string>(type: "TEXT", nullable: false),
-                    JournalName = table.Column<string>(type: "TEXT", nullable: true),
-                    ConferenceName = table.Column<string>(type: "TEXT", nullable: true),
-                    PublicationYear = table.Column<int>(type: "INTEGER", nullable: false),
-                    DOI = table.Column<string>(type: "TEXT", nullable: true),
-                    Category = table.Column<string>(type: "TEXT", nullable: true),
-                    IsImpactFactor = table.Column<bool>(type: "INTEGER", nullable: false),
-                    Publisher = table.Column<string>(type: "TEXT", nullable: true),
-                    Authors = table.Column<string>(type: "TEXT", nullable: true)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    JournalName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ConferenceName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PublicationYear = table.Column<int>(type: "int", nullable: false),
+                    DOI = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Category = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsImpactFactor = table.Column<bool>(type: "bit", nullable: false),
+                    Publisher = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Authors = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -116,15 +115,15 @@ namespace FacultyInduction.Migrations
                 name: "WorkExperiences",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    UserId = table.Column<int>(type: "INTEGER", nullable: false),
-                    OrganizationName = table.Column<string>(type: "TEXT", nullable: false),
-                    PositionTitle = table.Column<string>(type: "TEXT", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "TEXT", nullable: true),
-                    IsCurrentJob = table.Column<bool>(type: "INTEGER", nullable: false),
-                    JobType = table.Column<string>(type: "TEXT", nullable: true)
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    OrganizationName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PositionTitle = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsCurrentJob = table.Column<bool>(type: "bit", nullable: false),
+                    JobType = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
