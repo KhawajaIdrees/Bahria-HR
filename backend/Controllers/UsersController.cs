@@ -31,11 +31,6 @@ public class UsersController : ControllerBase
         // Update fields if they were provided
         user.FullName = dto.FullName ?? user.FullName;
         user.Phone = dto.Phone ?? user.Phone;
-        
-        if (!string.IsNullOrEmpty(dto.ProfileImageBase64))
-        {
-            user.ProfileImageBase64 = dto.ProfileImageBase64;
-        }
 
         await _context.SaveChangesAsync();
         return Ok(new { message = "Profile updated successfully" });
@@ -46,5 +41,4 @@ public class UpdateProfileDto
 {
     public string? FullName { get; set; }
     public string? Phone { get; set; }
-    public string? ProfileImageBase64 { get; set; }
 }

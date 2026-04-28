@@ -37,7 +37,6 @@ namespace FacultyInduction.Models
         [StringLength(50)]
         public string Role { get; set; } = "Applicant";
         
-        public string? ProfileImageBase64 { get; set; }
         public string? ResetPasswordToken { get; set; }
         public DateTime? ResetTokenExpiry { get; set; }
         
