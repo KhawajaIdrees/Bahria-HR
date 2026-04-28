@@ -27,6 +27,15 @@ namespace FacultyInduction.DTOs
         
         [JsonPropertyName("phone")]
         public string? Phone { get; set; }
+        
+        [JsonPropertyName("userType")]
+        public string UserType { get; set; } = "National"; // "National" or "Foreigner"
+        
+        [JsonPropertyName("idNumber")]
+        public string? IdNumber { get; set; }
+        
+        [JsonPropertyName("passportNumber")]
+        public string? PassportNumber { get; set; }
     }
     
     public class LoginDto

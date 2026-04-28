@@ -8,7 +8,9 @@ const Register = () => {
     email: '',
     password: '',
     confirmPassword: '',
+    userType: 'National', // 'National' or 'Foreigner'
     cnic: '',
+    passportNumber: '',
     phone: '',
     dateOfBirth: ''
   });
@@ -44,7 +46,8 @@ const Register = () => {
       fullName: formData.fullName,
       email: formData.email,
       password: formData.password,
-      cnic: formData.cnic,
+      userType: formData.userType,
+      idNumber: formData.userType === 'National' ? formData.cnic : formData.passportNumber,
       phone: formData.phone,
       dateOfBirth: formData.dateOfBirth || null
     };
@@ -138,18 +141,68 @@ const Register = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                CNIC
+              <label className="block text-sm font-medium text-gray-700 mb-3">
+                Applicant Type *
               </label>
-              <input
-                type="text"
-                name="cnic"
-                placeholder="12345-1234567-1"
-                value={formData.cnic}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
-              />
+              <div className="flex space-x-4">
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    name="userType"
+                    value="National"
+                    checked={formData.userType === 'National'}
+                    onChange={handleChange}
+                    className="h-4 w-4"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">National Citizen (CNIC)</span>
+                </label>
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="radio"
+                    name="userType"
+                    value="Foreigner"
+                    checked={formData.userType === 'Foreigner'}
+                    onChange={handleChange}
+                    className="h-4 w-4"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Foreigner (Passport)</span>
+                </label>
+              </div>
             </div>
+
+            {formData.userType === 'National' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  CNIC
+                </label>
+                <input
+                  type="text"
+                  name="cnic"
+                  placeholder="12345-1234567-1"
+                  value={formData.cnic}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
+                />
+              </div>
+            )}
+
+            {formData.userType === 'Foreigner' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Passport Number *
+                </label>
+                <input
+                  type="text"
+                  name="passportNumber"
+                  placeholder="e.g., AB1234567"
+                  required={formData.userType === 'Foreigner'}
+                  value={formData.passportNumber}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
+                />
+                <p className="text-xs text-gray-500 mt-1">Please provide your valid passport number</p>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700">

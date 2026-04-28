@@ -38,7 +38,10 @@ namespace FacultyInduction.Controllers
                 Email = registerDto.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(registerDto.Password),
                 FullName = registerDto.FullName,
-                CNIC = registerDto.CNIC,
+                IdNumber = registerDto.UserType == "National" 
+                    ? (registerDto.CNIC ?? registerDto.IdNumber) 
+                    : (registerDto.PassportNumber ?? registerDto.IdNumber),
+                UserType = registerDto.UserType,
                 DateOfBirth = registerDto.DateOfBirth,
                 Phone = registerDto.Phone,
                 Role = "Applicant"

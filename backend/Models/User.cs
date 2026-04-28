@@ -21,8 +21,18 @@ namespace FacultyInduction.Models
         [StringLength(200, MinimumLength = 2, ErrorMessage = "Full name must be between 2 and 200 characters")]
         public string FullName { get; set; } = string.Empty;
         
-        [StringLength(20, ErrorMessage = "CNIC cannot exceed 20 characters")]
+        /// <summary>National ID (for Pakistani citizens) or Passport (for foreigners)</summary>
+        [StringLength(30, ErrorMessage = "ID cannot exceed 30 characters")]
+        public string? IdNumber { get; set; }
+        
+        /// <summary>Backwards compatibility - same as IdNumber</summary>
+        [StringLength(20)]
         public string? CNIC { get; set; }
+        
+        /// <summary>National or Foreigner</summary>
+        [Required]
+        [StringLength(20)]
+        public string UserType { get; set; } = "National";
         
         public DateTime? DateOfBirth { get; set; }
         
